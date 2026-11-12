@@ -6,9 +6,11 @@ const webhook = process.env.LEAD_WEBHOOK_URL;
 
 export type LeadResult = { ok: true } | { ok: false; error: string };
 
-function field(formData: FormData, name: string) {
+function field(formData: FormData, name: string, maxLength = 500) {
   const value = formData.get(name);
-  return typeof value === "string" ? value.trim() : "";
+  if (typeof value !== "string") return "";
+  const trimmed = value.trim();
+  return trimmed.slice(0, maxLength);
 }
 
 function websiteHref(value: string) {
@@ -34,6 +36,16 @@ export async function submitLead(formData: FormData): Promise<LeadResult> {
   const track: Track | "general" =
     trackValue === "dtc" || trackValue === "b2b" ? trackValue : "general";
 
+  const gclid = field(formData, "gclid", 200);
+  const gbraid = field(formData, "gbraid", 200);
+  const wbraid = field(formData, "wbraid", 200);
+  const landing_page = field(formData, "landing_page", 2000);
+  const utm_source = field(formData, "utm_source", 200);
+  const utm_medium = field(formData, "utm_medium", 200);
+  const utm_campaign = field(formData, "utm_campaign", 200);
+  const utm_term = field(formData, "utm_term", 200);
+  const utm_content = field(formData, "utm_content", 200);
+
   if (name.length < 2) return { ok: false, error: "Add your name." };
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return { ok: false, error: "Add a real email address." };
@@ -54,7 +66,23 @@ export async function submitLead(formData: FormData): Promise<LeadResult> {
     const response = await fetch(webhook, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, phone, company, website, track }),
+      body: JSON.stringify({
+        name,
+        email,
+        phone,
+        company,
+        website,
+        track,
+        gclid,
+        gbraid,
+        wbraid,
+        landing_page,
+        utm_source,
+        utm_medium,
+        utm_campaign,
+        utm_term,
+        utm_content,
+      }),
       signal: AbortSignal.timeout(12000),
     });
 

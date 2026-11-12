@@ -20,6 +20,25 @@ export function GclidCapture() {
     if (wbraid && !sessionStorage.getItem("wbraid")) {
       sessionStorage.setItem("wbraid", wbraid);
     }
+
+    if (!sessionStorage.getItem("landing_page")) {
+      sessionStorage.setItem("landing_page", window.location.href);
+    }
+
+    const utmParams = [
+      "utm_source",
+      "utm_medium",
+      "utm_campaign",
+      "utm_term",
+      "utm_content",
+    ] as const;
+
+    for (const param of utmParams) {
+      const value = params.get(param);
+      if (value && !sessionStorage.getItem(param)) {
+        sessionStorage.setItem(param, value);
+      }
+    }
   }, []);
 
   return null;

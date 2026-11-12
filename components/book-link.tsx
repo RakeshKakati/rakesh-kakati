@@ -80,6 +80,33 @@ function BookDialog({
   const [error, setError] = useState("");
   const [pending, startTransition] = useTransition();
 
+  const [attribution] = useState(() => {
+    if (typeof window === "undefined") {
+      return {
+        gclid: "",
+        gbraid: "",
+        wbraid: "",
+        landing_page: "",
+        utm_source: "",
+        utm_medium: "",
+        utm_campaign: "",
+        utm_term: "",
+        utm_content: "",
+      };
+    }
+    return {
+      gclid: sessionStorage.getItem("gclid") || "",
+      gbraid: sessionStorage.getItem("gbraid") || "",
+      wbraid: sessionStorage.getItem("wbraid") || "",
+      landing_page: sessionStorage.getItem("landing_page") || "",
+      utm_source: sessionStorage.getItem("utm_source") || "",
+      utm_medium: sessionStorage.getItem("utm_medium") || "",
+      utm_campaign: sessionStorage.getItem("utm_campaign") || "",
+      utm_term: sessionStorage.getItem("utm_term") || "",
+      utm_content: sessionStorage.getItem("utm_content") || "",
+    };
+  });
+
   useLayoutEffect(() => {
     onCloseRef.current = onClose;
     pendingRef.current = pending;
@@ -154,6 +181,15 @@ function BookDialog({
           }}
         >
           {track ? <input type="hidden" name="track" value={track} /> : null}
+          <input type="hidden" name="gclid" value={attribution.gclid} />
+          <input type="hidden" name="gbraid" value={attribution.gbraid} />
+          <input type="hidden" name="wbraid" value={attribution.wbraid} />
+          <input type="hidden" name="landing_page" value={attribution.landing_page} />
+          <input type="hidden" name="utm_source" value={attribution.utm_source} />
+          <input type="hidden" name="utm_medium" value={attribution.utm_medium} />
+          <input type="hidden" name="utm_campaign" value={attribution.utm_campaign} />
+          <input type="hidden" name="utm_term" value={attribution.utm_term} />
+          <input type="hidden" name="utm_content" value={attribution.utm_content} />
           <input
             type="text"
             name="company_fax"
