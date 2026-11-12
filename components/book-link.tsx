@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
-import { bookingHref, type Track } from "@/lib/site";
+import { useEffect, useId, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { submitLead } from "@/app/lead";
+import type { Track } from "@/lib/site";
 
 type Props = {
   track?: Track;
@@ -10,44 +12,174 @@ type Props = {
   className?: string;
 };
 
+const fields = [
+  { name: "name", label: "Name", type: "text", autoComplete: "name" },
+  { name: "email", label: "Email", type: "email", autoComplete: "email" },
+  { name: "phone", label: "Phone", type: "tel", autoComplete: "tel" },
+  {
+    name: "company",
+    label: "Company",
+    type: "text",
+    autoComplete: "organization",
+  },
+  {
+    name: "website",
+    label: "Company website",
+    type: "text",
+    autoComplete: "url",
+    placeholder: "https://",
+  },
+] as const;
+
 export function BookLink({
   track,
   children = "Book a 30-min call",
   variant = "solid",
   className = "",
 }: Props) {
-  const finalHref = useMemo(() => {
-    const baseHref = bookingHref(track);
-
-    if (typeof window === "undefined") return baseHref;
-
-    const url = new URL(baseHref);
-
-    const gclid = sessionStorage.getItem("gclid");
-    const gbraid = sessionStorage.getItem("gbraid");
-    const wbraid = sessionStorage.getItem("wbraid");
-
-    if (gclid) url.searchParams.set("gclid", gclid);
-    if (gbraid) url.searchParams.set("gbraid", gbraid);
-    if (wbraid) url.searchParams.set("wbraid", wbraid);
-
-    return url.toString();
-  }, [track]);
-
+  const [open, setOpen] = useState(false);
   const styles =
     variant === "solid"
       ? "bg-accent text-ink hover:bg-white"
       : "border border-line text-foreground hover:border-foreground";
 
   return (
-    <a
-      href={finalHref}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-medium transition-colors ${styles} ${className}`}
-    >
-      {children}
-      <span aria-hidden="true">→</span>
-    </a>
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className={`inline-flex cursor-pointer items-center justify-center gap-2 px-5 py-3 text-sm font-medium transition-colors ${styles} ${className}`}
+      >
+        {children}
+        <span aria-hidden="true">→</span>
+      </button>
+      {open ? <BookDialog track={track} onClose={() => setOpen(false)} /> : null}
+    </>
+  );
+}
+
+function BookDialog({
+  track,
+  onClose,
+}: {
+  track?: Track;
+  onClose: () => void;
+}) {
+  const router = useRouter();
+  const titleId = useId();
+  const firstField = useRef<HTMLInputElement>(null);
+  const onCloseRef = useRef(onClose);
+  const pendingRef = useRef(false);
+  const [error, setError] = useState("");
+  const [pending, startTransition] = useTransition();
+  onCloseRef.current = onClose;
+  pendingRef.current = pending;
+
+  useEffect(() => {
+    firstField.current?.focus();
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !pendingRef.current) onCloseRef.current();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = previous;
+      document.removeEventListener("keydown", onKey);
+    };
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center p-3 sm:items-center sm:p-6">
+      <button
+        type="button"
+        aria-label="Close"
+        className="absolute inset-0 bg-black/70"
+        onClick={() => {
+          if (!pending) onClose();
+        }}
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        className="relative z-10 w-full max-w-lg border border-line bg-surface p-6 sm:p-8"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-[0.18em] text-accent">
+              30 minutes
+            </p>
+            <h2 id={titleId} className="mt-2 font-serif text-3xl leading-tight">
+              Book a call
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={pending}
+            className="px-2 text-2xl leading-none text-muted hover:text-foreground disabled:opacity-40"
+            aria-label="Close form"
+          >
+            ×
+          </button>
+        </div>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          Send the basics. I&apos;ll write back to set the time.
+        </p>
+        <form
+          className="mt-6 space-y-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            setError("");
+            const formData = new FormData(event.currentTarget);
+            startTransition(async () => {
+              const result = await submitLead(formData);
+              if (result.ok) {
+                router.push("/thank-you");
+                return;
+              }
+              setError(result.error);
+            });
+          }}
+        >
+          {track ? <input type="hidden" name="track" value={track} /> : null}
+          <input
+            type="text"
+            name="company_fax"
+            tabIndex={-1}
+            autoComplete="off"
+            className="hidden"
+            aria-hidden="true"
+          />
+          {fields.map((field, index) => (
+            <label key={field.name} className="block text-sm">
+              <span className="text-muted">{field.label}</span>
+              <input
+                ref={index === 0 ? firstField : undefined}
+                name={field.name}
+                type={field.type}
+                required
+                autoComplete={field.autoComplete}
+                placeholder={"placeholder" in field ? field.placeholder : undefined}
+                className="mt-1.5 w-full border border-line bg-background px-3 py-3 text-foreground outline-none focus:border-accent"
+              />
+            </label>
+          ))}
+          {error ? (
+            <p role="alert" className="text-sm text-accent">
+              {error}
+            </p>
+          ) : null}
+          <button
+            type="submit"
+            disabled={pending}
+            className="inline-flex w-full items-center justify-center bg-accent px-5 py-3 text-sm font-medium text-ink transition-colors hover:bg-white disabled:opacity-60"
+          >
+            {pending ? "Sending…" : "Continue"}
+          </button>
+        </form>
+      </div>
+    </div>
   );
 }

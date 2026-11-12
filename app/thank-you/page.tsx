@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { site } from "@/lib/site";
 import { ThankYouConversion } from "@/components/thank-you-conversion";
+import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "You're booked",
+  title: "Details received",
   robots: { index: false, follow: false },
 };
 
@@ -18,13 +18,12 @@ export default function ThankYouPage() {
   return (
     <div className="mx-auto max-w-2xl px-5 py-20">
       <ThankYouConversion />
-      <p className="text-xs uppercase tracking-[0.22em] text-accent">Confirmed</p>
+      <p className="text-xs uppercase tracking-[0.22em] text-accent">Received</p>
       <h1 className="mt-4 font-serif text-5xl leading-tight sm:text-6xl">
-        You&apos;re booked.
+        I have your details.
       </h1>
       <p className="mt-5 text-lg leading-relaxed text-muted">
-        The 30-minute call is on the calendar. I&apos;ll read what you share
-        before we talk.
+        I&apos;ll read them and write back to set the 30 minutes.
       </p>
       <h2 className="mt-10 text-sm uppercase tracking-[0.18em] text-muted">
         Have this ready
@@ -38,14 +37,6 @@ export default function ThankYouPage() {
         ))}
       </ol>
       <div className="mt-10 flex flex-col gap-3 text-sm">
-        <a
-          href={site.bookingUrl}
-          className="text-foreground underline decoration-line underline-offset-4 hover:decoration-accent"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Need to move it? Reschedule on Cal.com
-        </a>
         <a
           href={`mailto:${site.email}`}
           className="text-muted underline decoration-line underline-offset-4 hover:text-foreground"
