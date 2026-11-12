@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Instrument_Serif } from "next/font/google";
+import Script from "next/script";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { personJsonLd, site } from "@/lib/site";
+import { GclidCapture } from "@/components/gclid-capture";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -39,7 +41,22 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${instrument.variable} h-full antialiased`}
     >
+      <head>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=AW-11080640559"
+          strategy="afterInteractive"
+        />
+        <Script id="google-ads-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'AW-11080640559');
+          `}
+        </Script>
+      </head>
       <body className="flex min-h-full flex-col font-sans">
+        <GclidCapture />
         <a
           href="#content"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-accent focus:px-3 focus:py-2 focus:text-ink"
