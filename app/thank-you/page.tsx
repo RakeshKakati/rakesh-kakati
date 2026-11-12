@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { site } from "@/lib/site";
+import { ThankYouConversion } from "@/components/thank-you-conversion";
 
 export const metadata: Metadata = {
   title: "You're booked",
@@ -16,6 +17,7 @@ const prep = [
 export default function ThankYouPage() {
   return (
     <div className="mx-auto max-w-2xl px-5 py-20">
+      <ThankYouConversion />
       <p className="text-xs uppercase tracking-[0.22em] text-accent">Confirmed</p>
       <h1 className="mt-4 font-serif text-5xl leading-tight sm:text-6xl">
         You&apos;re booked.

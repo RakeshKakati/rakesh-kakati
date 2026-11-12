@@ -34,14 +34,6 @@ export function BookLink({
     return url.toString();
   }, [track]);
 
-  const handleClick = () => {
-    if (typeof window !== "undefined" && window.gtag) {
-      window.gtag("event", "conversion", {
-        send_to: "AW-11080640559/uoATCMX9nbcdEK_Q1KMp",
-      });
-    }
-  };
-
   const styles =
     variant === "solid"
       ? "bg-accent text-ink hover:bg-white"
@@ -52,7 +44,6 @@ export function BookLink({
       href={finalHref}
       target="_blank"
       rel="noopener noreferrer"
-      onClick={handleClick}
       className={`inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-medium transition-colors ${styles} ${className}`}
     >
       {children}
