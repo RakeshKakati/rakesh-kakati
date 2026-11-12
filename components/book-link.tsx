@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, useTransition } from "react";
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import { useRouter } from "next/navigation";
 import { submitLead } from "@/app/lead";
 import type { Track } from "@/lib/site";
@@ -72,8 +79,11 @@ function BookDialog({
   const pendingRef = useRef(false);
   const [error, setError] = useState("");
   const [pending, startTransition] = useTransition();
-  onCloseRef.current = onClose;
-  pendingRef.current = pending;
+
+  useLayoutEffect(() => {
+    onCloseRef.current = onClose;
+    pendingRef.current = pending;
+  });
 
   useEffect(() => {
     firstField.current?.focus();

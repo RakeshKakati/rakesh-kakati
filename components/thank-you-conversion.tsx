@@ -21,43 +21,27 @@ export function ThankYouConversion() {
       return;
     }
 
-    const fireConversion = () => {
-      if (typeof window.gtag === "function") {
-        const conversionData: {
-          send_to: string;
-          transaction_id?: string;
-        } = {
-          send_to: "AW-11080640559/uoATCMX9nbcdEK_Q1KMp",
-        };
+    if (typeof window.gtag !== "function") {
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function () {
+        // eslint-disable-next-line prefer-rest-params
+        window.dataLayer!.push(arguments);
+      };
+    }
 
-        if (bookingUid) {
-          conversionData.transaction_id = bookingUid;
-        }
-
-        window.gtag("event", "conversion", conversionData);
-        sessionStorage.setItem(storageKey, "1");
-      } else if (window.dataLayer) {
-        window.dataLayer.push({
-          event: "conversion",
-          send_to: "AW-11080640559/uoATCMX9nbcdEK_Q1KMp",
-          ...(bookingUid && { transaction_id: bookingUid }),
-        });
-        sessionStorage.setItem(storageKey, "1");
-      }
+    const conversionData: {
+      send_to: string;
+      transaction_id?: string;
+    } = {
+      send_to: "AW-11080640559/uoATCMX9nbcdEK_Q1KMp",
     };
 
-    if (typeof window.gtag === "function") {
-      fireConversion();
-    } else {
-      const checkGtag = setInterval(() => {
-        if (typeof window.gtag === "function") {
-          clearInterval(checkGtag);
-          fireConversion();
-        }
-      }, 100);
-
-      setTimeout(() => clearInterval(checkGtag), 5000);
+    if (bookingUid) {
+      conversionData.transaction_id = bookingUid;
     }
+
+    window.gtag("event", "conversion", conversionData);
+    sessionStorage.setItem(storageKey, "1");
   }, []);
 
   return null;
